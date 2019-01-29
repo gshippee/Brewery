@@ -29,6 +29,10 @@ pause = False
 
 target_temp1 = 0
 target_temp2 = 0
+start_time1 = 0
+target_time1 = 0
+start_time2 = 0
+target_time2 = 0
 
 current_temp1 = 0
 current_temp2 = 0
@@ -491,8 +495,8 @@ class Brewery(App):
 		print("_______________________")
 		self.u_current_temp1_val.set_text(str(current_temp1)+"\u2103")
 		self.u_current_temp2_val.set_text(str(current_temp2)+"\u2103")
-		self.current_temp1_val.set_text(str(current_temp1)+"\u2103")
-		self.current_temp2_val.set_text(str(current_temp2)+"\u2103")
+		self.current_temp1_val.set_text(str(current_temp3)+"\u2103")
+		self.current_temp2_val.set_text(str(current_temp5)+"\u2103")
 		self.current_temp3_val.set_text(str(current_temp3)+"\u2103")
 		self.current_temp4_val.set_text(str(current_temp4)+"\u2103")
 		self.current_temp5_val.set_text(str(current_temp5)+"\u2103")
@@ -528,7 +532,7 @@ class Brewery(App):
 				print("in this script with one from the enumeration list output above and try again.")
 
 
-		if current_temp2 < (target_temp2-2) and heater2 == False:
+		if current_temp2 < (target_temp2-1) and heater2 == False:
 			self.fire_img1.set_image('res/fire.png')
 			try:
 				# turn heater 2 on
@@ -576,13 +580,14 @@ class Brewery(App):
 		if current_temp1 >= target_temp1:
 			print("TEMP OVER")
 			v.write([0x00,0xff,0x02])
-			temp_array[0] = current_temp3
+			temp_array[0] = current_temp1
+			temp_array[1] = current_temp3
 			print("STARTING RECIRCULATION")
 			print("CURRENT TEMP COMPARISON 1")
 			print(temp_array[0])
 			print(temp_array[1])
-			while(temp_array[0] != temp_array[1]):
-				if current_temp3 > (target_temp1 + .2) and heater1 == True:
+			while(temp_array[0] <= temp_array[1]-.5 or temp_array[0] >= temp_array[1]+.5):
+				if current_temp1 > (target_temp1+.3) and heater1 == True:
 					try:
 						# turn heater 1 off
 						print("Turning off heater 1")
@@ -603,23 +608,24 @@ class Brewery(App):
 						print("You probably don't have the hard coded device. Update the hid.device line")
 						print("in this script with one from the enumeration list output above and try again.")
 	
-				temp_array[0] = current_temp3
+				temp_array[0] = current_temp1
 				self.get_temp() 
 				print("COUNTER:")
 				print(counter)
-				sleep(8)
+				sleep(4)
 				self.get_temp() 
 				temp_array[1] = current_temp3
 				print("CURRENT TEMP COMPARISON 1")
 				print(temp_array[0])
 				print(temp_array[1])
 				counter += 1
-				if (counter >= 16):
+				if (counter >= 5):
 					counter = 0
 					break
 			v.write([0x00, 0xfd, 0x02])
-			self.wait(10)
+			sleep(2)
 			self.get_temp()
+			print("BROKE FROM LOOP")
 			if(current_temp3 > (target_temp1 + .5)):
 				print("SLEEPING FOR TEMP TO LOWER")
 				try:
@@ -632,11 +638,12 @@ class Brewery(App):
 					print("You probably don't have the hard coded device. Update the hid.device line")
 					print("in this script with one from the enumeration list output above and try again.")
 				while(current_temp3 > target_temp1):
-					self.wait(5)
 					self.get_temp()
+					sleep(5)
 				self.set_temp1()
 
 			elif(current_temp3 < (target_temp1 - .5)):
+				print("Still need to heat up")
 				self.set_temp1()
 			else:
 				try:
@@ -676,13 +683,13 @@ class Brewery(App):
 		if current_temp2 >= target_temp2:
 			print("TEMP OVER")
 			v.write([0x00,0xff,0x01])
-			temp_array[0] = current_temp3
+			temp_array[0] = current_temp2
 			print("STARTING RECIRCULATION")
 			print("CURRENT TEMP COMPARISON 1")
 			print(temp_array[0])
 			print(temp_array[1])
 			while(temp_array[0] != temp_array[1]):
-				if current_temp5 > (target_temp2 + .2) and heater2 == True:
+				if current_temp2 > (target_temp2+.3) and heater2 == True:
 					try:
 						# turn heater 1 off
 						print("Turning off heater 2")
@@ -703,22 +710,23 @@ class Brewery(App):
 						print("You probably don't have the hard coded device. Update the hid.device line")
 						print("in this script with one from the enumeration list output above and try again.")
 	
-				temp_array[0] = current_temp5
+				temp_array[0] = current_temp2
 				self.get_temp() 
 				print("COUNTER:")
 				print(counter)
-				sleep(8)
+				sleep(4)
 				self.get_temp() 
 				temp_array[1] = current_temp5
 				print("CURRENT TEMP COMPARISON 2")
 				print(temp_array[0])
 				print(temp_array[1])
 				counter += 1
-				if (counter >= 10):
+				if (counter >= 5):
 					counter = 0
 					break
+				break
 			v.write([0x00, 0xfd, 0x01])
-			self.wait(2)
+			sleep(2)
 			self.get_temp()
 			if(current_temp5 > (target_temp2 + .5)):
 				print("SLEEPING FOR TEMP TO LOWER")
@@ -732,11 +740,11 @@ class Brewery(App):
 					print("You probably don't have the hard coded device. Update the hid.device line")
 					print("in this script with one from the enumeration list output above and try again.")
 				while(current_temp3 > target_temp2):
-					self.wait(5)
+					sleep(5)
 					self.get_temp()
 				self.set_temp2()
 
-			elif(current_temp5 < (target_temp2 - .5)):
+			elif(current_temp5 < (target_temp2)):
 				self.set_temp2()
 			else:
 				try:
@@ -754,7 +762,7 @@ class Brewery(App):
 		try:
 			#turn pump 1 on
 			print("Turning on pump 1")
-			h.write([0x00,0xff,0x02])
+			v.write([0x00,0xff,0x04])
 			self.water_pump1.set_image('res/Wassermotor-mit_Pfeilen_w_trans4.png.gif')
 			self.pipe_right.set_image('res/pipes-right-only.gif')
 
@@ -767,7 +775,7 @@ class Brewery(App):
 		try:
 			#turn pump 1 off
 			print("Turning off pump 1")
-			h.write([0x00,0xfd,0x02])
+			v.write([0x00,0xfd,0x04])
 			self.pipe_right.set_image('res/pipes-right-only-static.png')
 			self.water_pump1.set_image('res/pump_static.png')
 
@@ -892,16 +900,21 @@ class Brewery(App):
 		self.cup.set_image('res/blank.png')
 		data.write(struct.pack('>B',10))
 
-	def wait(self,target_time):
+	def wait(self, target_time):
 		global first_loop
 		global target_temp1
 		global target_temp2
+		print("starting wait")
 		if first_loop == True:
 			start_time = self.get_time()
 			delta_time = self.get_time()-start_time
+			print(delta_time)
 			first_loop == False
 		while (delta_time < target_time):
+			print('continuing wait')
 			delta_time = self.get_time()-start_time
+			#self.set_temp1()
+			#self.set_temp2()
 			self.maintain_temp()
 			if (target_time-delta_time) < 0:
 				self.current_time_val.set_text('00:00:00')
@@ -913,8 +926,37 @@ class Brewery(App):
 			print(delta_time)
 			sleep(1)
 
+	def wait2(self):
+		global target_time2
+		global start_time2
+		global first_loop
+		global target_temp1
+		global target_temp2
+		print("TARGET TIME")
+		print(target_time2)
+		print("TARGET TIME 2")
+		if first_loop == True:
+			#start_time = self.get_time()
+			delta_time = self.get_time()-start_time2
+			print(delta_time)
+			first_loop == False
+		while (delta_time < target_time2):
+			delta_time = self.get_time()-start_time2
+			#self.set_temp1()
+			#self.set_temp2()
+			self.maintain_temp()
+			if (target_time2-delta_time) < 0:
+				self.current_time_val.set_text('00:00:00')
+			else:
+				self.current_time_val.set_text(str(int((target_time2-delta_time)/3600)).zfill(2)+":"+ str(int((target_time2-delta_time)/60)%60).zfill(2)+":"+str((target_time2-delta_time)%60).zfill(2))
+			running_time = self.get_time()
+			self.counter.set_text('Running Time: ' + str(int(running_time/3600)).zfill(2)+":"+ str(int(running_time/60)%60).zfill(2)+":"+str(running_time%60).zfill(2))
+			print(target_time2)
+			print(delta_time)
+			sleep(1)
+
 	def run_brewery(self):
-		global target_temp1, target_temp2, instructions, step, start_time, total_start_time, fileupload, pause, heater2, continue_on
+		global target_temp1, target_temp2, instructions, step, start_time, total_start_time, fileupload, pause, heater2, continue_on, target_time1, target_time2, start_time1, start_time2
 		self.get_temp()
 		if(fileupload == True and continue_on == True):
 			try:
@@ -928,6 +970,13 @@ class Brewery(App):
 				delta_time = self.get_time()
 				self.counter.set_text('Running Time: ' + str(int(delta_time/3600)).zfill(2)+":"+ str(int(delta_time/60)%60).zfill(2)+":"+str(delta_time%60).zfill(2)) 
 				print(step)
+				if ID == 21:
+					self.wait2()
+				if ID == 20:
+					print("TEST")
+					target_time2 = int(ARG)
+					start_time2 = self.get_time()
+					self.target_time_val.set_text(str(int(ARG/3600)).zfill(2)+":"+ str(int(ARG/60)%60).zfill(2)+":"+str(ARG%60).zfill(2))
 				if ID == 0:
 					self.wait(int(ARG))
 					self.target_time_val.set_text(str(int(ARG/3600)).zfill(2)+":"+ str(int(ARG/60)%60).zfill(2)+":"+str(ARG%60).zfill(2))
@@ -974,7 +1023,7 @@ class Brewery(App):
 					step+=1
 					if ID == 16:
 						continue_on = False
-				if ID == 16:
+				if ID == 18:
 					self.turn_on_pump4()
 				if ID == 17:
 					self.turn_off_pump4()
@@ -1029,9 +1078,9 @@ if __name__ == "__main__":
 #       filename = input("Enter a filename: ")
         instructions = '' 
         print("Done opening device")
-        #start(Brewery, debug=False, address='127.0.0.1', port = 5000, start_browser=True)
+        start(Brewery, debug=False, address='127.0.0.1', port = 5002, start_browser=True)
         #start(Brewery, debug=False, address='172.20.15.255', port = 5000, start_browser=True)
-        start(Brewery, debug=True, address='192.168.1.26', port = 5001, start_browser=True)
+        #start(Brewery, debug=True, address='192.168.1.26', port = 5001, start_browser=True)
 
       #  h.write([0x00,0xfc])
       #  v.write([0x00,0xfc])
